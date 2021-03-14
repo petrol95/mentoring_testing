@@ -3,6 +3,7 @@ package messenger;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.DisabledOnJre;
 import org.junit.jupiter.api.condition.JRE;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
  * @author Olga Petrova
  */
 
-public class MessengerTestCase {
+public class TemplateOperationTestSuite {
 
     private Messenger messenger;
 
@@ -53,6 +54,7 @@ public class MessengerTestCase {
     }
 
     @Test
+    @Staging
     public void shouldPrintWhenAllParametersGiven() throws IOException {
         assertEquals("Dear Anna," +
                 "we would like to inform you about our meeting on 12.09.2020." +
@@ -60,14 +62,21 @@ public class MessengerTestCase {
     }
 
     @Test
+    @Staging
     public void shouldThrowExceptionWhenSomeParametersMissed() {
         Map<String, String> inputData = new HashMap<>();
         inputData.put("username", "Anna");
         inputData.put("event", "meeting");
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            messenger.operateTemplate(inputData);
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> messenger.operateTemplate(inputData));
+    }
+
+    @Test
+    @ExtendWith(OutputExtension.class)
+    public void shouldWriteTestResultToFile() throws IOException {
+        assertEquals("Dear Anna," +
+                "we would like to inform you about our meeting on 12.09.2020." +
+                "Please see #{meet} for more information.", messenger.operateTemplate(firstInputData));
     }
 
     @TestFactory
@@ -122,7 +131,8 @@ public class MessengerTestCase {
     }
 
     @Test
-    @DisabledOnJre(JRE.JAVA_8)
+    @Staging
+    @DisabledOnJre(JRE.JAVA_11)
     public void shouldNotBeRun() throws IOException {
         assertEquals("Dear John," +
                 "we would like to inform you about our party on 14.10.2021." +
