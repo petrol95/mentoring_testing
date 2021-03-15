@@ -1,5 +1,8 @@
 package messenger;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -13,7 +16,9 @@ public class FileInputOutput implements DataInputOutput {
     }
 
     @Override
-    public void output(String message, String fileName) {
-
+    public void output(String message, String fileName) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+            writer.write(message);
+        }
     }
 }

@@ -24,8 +24,10 @@ import static org.mockito.Mockito.when;
 public class InputOutputTestSuite {
 
     public static final String TEMP_FILE = "temp.txt";
-    private static final String TEMPLATE_LINE = "Dear #{username}," +
-            " we would like to inform you about our #{event} on #{eventDate}." +
+
+    private static final String NEW_LINE = Messenger.LINE_SEPARATOR;
+    private static final String TEMPLATE_LINE = "Dear #{username}," + NEW_LINE +
+            " we would like to inform you about our #{event} on #{eventDate}." + NEW_LINE +
             " Please see #{tag} for more information.";
 
     private Messenger messenger;

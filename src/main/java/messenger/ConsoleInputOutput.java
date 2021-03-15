@@ -14,6 +14,6 @@ public class ConsoleInputOutput implements DataInputOutput {
 
     @Override
     public void output(String message, String outputFile) {
-
+        System.out.println(message);
     }
 }
