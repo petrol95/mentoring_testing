@@ -14,10 +14,12 @@ public class MessengerOutput {
     }
 
     public void outputToFile(String message, Writer writer) throws IOException {
-
+        try (BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
+            bufferedWriter.write(message);
+        }
     }
 
     public void printToConsole(String message) {
-
+        System.out.println(message);
     }
 }
