@@ -1,2 +1,2 @@
 Test method: shouldWriteTestResultToFile()
-Result: failed
+Result: passed

@@ -8,6 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,6 +18,8 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Olga Petrova
@@ -24,7 +27,13 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 public class TemplateOperationTestSuite {
 
+    private static final String NEW_LINE = Messenger.LINE_SEPARATOR;
+    private static final String TEMPLATE_LINE = "Dear #{username}," +
+            " we would like to inform you about our #{event} on #{eventDate}." +
+            " Please see #{tag} for more information.";
+
     private Messenger messenger;
+    private BufferedReader mockReader;
 
     private Map<String, String> firstInputData;
     private Map<String, String> secondInputData;
@@ -33,6 +42,7 @@ public class TemplateOperationTestSuite {
     @BeforeEach
     public void prepareInputData() {
         messenger = new Messenger();
+        mockReader = mock(BufferedReader.class);
 
         firstInputData = new HashMap<>();
         firstInputData.put("username", "Anna");
@@ -56,51 +66,62 @@ public class TemplateOperationTestSuite {
     @Test
     @Staging
     public void shouldPrintWhenAllParametersGiven() throws IOException {
+        when(mockReader.readLine()).thenReturn(TEMPLATE_LINE).thenReturn(null);
         assertEquals("Dear Anna," +
-                "we would like to inform you about our meeting on 12.09.2020." +
-                "Please see #{meet} for more information.", messenger.operateTemplate(firstInputData));
+                " we would like to inform you about our meeting on 12.09.2020." +
+                " Please see #{meet} for more information." + NEW_LINE,
+                messenger.operateTemplate(firstInputData, mockReader));
     }
 
     @Test
     @Staging
-    public void shouldThrowExceptionWhenSomeParametersMissed() {
+    public void shouldThrowExceptionWhenSomeParametersMissed() throws IOException {
+        when(mockReader.readLine()).thenReturn(TEMPLATE_LINE).thenReturn(null);
         Map<String, String> inputData = new HashMap<>();
         inputData.put("username", "Anna");
         inputData.put("event", "meeting");
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> messenger.operateTemplate(inputData));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> messenger.operateTemplate(inputData, mockReader));
     }
 
     @Test
     @ExtendWith(OutputExtension.class)
     public void shouldWriteTestResultToFile() throws IOException {
+        when(mockReader.readLine()).thenReturn(TEMPLATE_LINE).thenReturn(null);
         assertEquals("Dear Anna," +
-                "we would like to inform you about our meeting on 12.09.2020." +
-                "Please see #{meet} for more information.", messenger.operateTemplate(firstInputData));
+                " we would like to inform you about our meeting on 12.09.2020." +
+                " Please see #{meet} for more information." + NEW_LINE,
+                messenger.operateTemplate(firstInputData, mockReader));
     }
 
     @TestFactory
     Collection<DynamicTest> runDynamicTestsWithValidParameters() {
         return Arrays.asList(
                 dynamicTest("Dynamic test #1",
-                        () -> assertEquals(
-                                "Dear John," +
-                                        "we would like to inform you about our party on 14.10.2021." +
-                                        "Please see #123 for more information.",
-                                messenger.operateTemplate(secondInputData))),
+                        () -> {
+                            when(mockReader.readLine()).thenReturn(TEMPLATE_LINE).thenReturn(null);
+                            assertEquals("Dear John," +
+                                            " we would like to inform you about our party on 14.10.2021." +
+                                            " Please see #123 for more information." + NEW_LINE,
+                                    messenger.operateTemplate(secondInputData, mockReader));
+                        }),
+
                 dynamicTest("Dynamic test #2",
-                        () -> assertEquals(
-                                "Dear Peter," +
-                                        "we would like to inform you about our lunch on 2020/09/01." +
-                                        "Please see link for more information.",
-                                messenger.operateTemplate(thirdInputData)))
+                        () -> {
+                            when(mockReader.readLine()).thenReturn(TEMPLATE_LINE).thenReturn(null);
+                            assertEquals("Dear Peter," +
+                                            " we would like to inform you about our lunch on 2020/09/01." +
+                                            " Please see link for more information." + NEW_LINE,
+                                    messenger.operateTemplate(thirdInputData, mockReader));
+                        })
         );
     }
 
     @ParameterizedTest
     @MethodSource("generateValidParams")
-    public void shouldPrintForDifferentValidParameters(Map<String, String> data, String result) {
-        assertEquals(result, messenger.operateTemplate(data));
+    public void shouldPrintForDifferentValidParameters(Map<String, String> data, String result) throws IOException {
+        when(mockReader.readLine()).thenReturn(TEMPLATE_LINE).thenReturn(null);
+        assertEquals(result, messenger.operateTemplate(data, mockReader));
     }
 
     private static Stream generateValidParams() {
@@ -120,13 +141,13 @@ public class TemplateOperationTestSuite {
                 Arguments.of(
                         firstDataKit,
                         "Dear John," +
-                                "we would like to inform you about our party on 14.10.2021." +
-                                "Please see #123 for more information."),
+                                " we would like to inform you about our party on 14.10.2021." +
+                                " Please see #123 for more information." + NEW_LINE),
                 Arguments.of(
                         secondDataKit,
                         "Dear Peter," +
-                                "we would like to inform you about our lunch on 2020/09/01." +
-                                "Please see link for more information.")
+                                " we would like to inform you about our lunch on 2020/09/01." +
+                                " Please see link for more information." + NEW_LINE)
         );
     }
 
@@ -134,8 +155,10 @@ public class TemplateOperationTestSuite {
     @Staging
     @DisabledOnJre(JRE.JAVA_11)
     public void shouldNotBeRun() throws IOException {
+        when(mockReader.readLine()).thenReturn(TEMPLATE_LINE).thenReturn(null);
         assertEquals("Dear John," +
-                "we would like to inform you about our party on 14.10.2021." +
-                "Please see #123 for more information.", messenger.operateTemplate(secondInputData));
+                " we would like to inform you about our party on 14.10.2021."  +
+                " Please see #123 for more information." + NEW_LINE,
+                messenger.operateTemplate(secondInputData, mockReader));
     }
 }
