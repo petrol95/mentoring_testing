@@ -4,18 +4,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Olga Petrova
@@ -49,21 +44,48 @@ public class InputOutputTestSuite {
     @Test
     public void shouldWriteMessageToFile(@TempDir Path tempDir) throws IOException {
         Path tempFile = tempDir.resolve(TEMP_FILE);
-        DataInputOutput dataInputOutput = new FileInputOutput();
         when(mockReader.readLine()).thenReturn(TEMPLATE_LINE).thenReturn(null);
+        MessengerOutput messengerOutput = new MessengerOutput();
 
         List<String> result = new ArrayList<>();
-
         result.add("Dear Anna,");
         result.add(" we would like to inform you about our meeting on 12.09.2020.");
         result.add(" Please see #{meet} for more information.");
 
         String message = messenger.operateTemplate(inputData, mockReader);
-        dataInputOutput.output(message, tempFile.toString());
+        messengerOutput.outputToFile(message, new FileWriter(tempFile.toString()));
 
         assertAll(
                 () -> assertTrue(Files.exists(tempFile)),
                 () -> assertLinesMatch(result, Files.readAllLines(tempFile))
         );
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenWrongInputFileName() {
+        assertThrows(FileNotFoundException.class, () ->
+                new MessengerInput(new BufferedReader(new FileReader("failed.txt"))));
+    }
+
+    @Test
+    public void shouldCollectDataInMapWhenMockedInput() throws IOException {
+        MessengerInput messengerInput = new MessengerInput(mockReader);
+
+        when(mockReader.readLine())
+                .thenReturn("username Anna", "event meeting", "eventDate 12.09.2020", "tag #{meet}")
+                .thenReturn(null);
+
+        assertEquals(inputData, messengerInput.inputFromFile());
+    }
+
+    @Test
+    public void shouldAddDataToInputMap() throws IOException {
+        MessengerInput messengerInput = new MessengerInput(mockReader);
+        MessengerInput spyInput = spy(messengerInput);
+
+        doReturn(new HashMap<>().put("username", "Anna")).when(spyInput).inputFromConsole();
+        spyInput.collectInputData("username Anna");
+
+        assertEquals("Anna", spyInput.getInputData().get("username"));
     }
 }
