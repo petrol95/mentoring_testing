@@ -9,10 +9,15 @@ import java.io.IOException;
 public class Launcher {
 
     public static void main(String[] args) throws IOException {
+        Messenger messenger = new Messenger();
+        chooseOperationType(args, messenger);
+    }
+
+    public static void chooseOperationType(String[] args, Messenger messenger) throws IOException {
         if (args.length == 0) {
-            new Messenger().processConsoleOperation();
+            messenger.processConsoleOperation();
         } else {
-            new Messenger().processFileOperation(args);
+            messenger.processFileOperation(args);
         }
     }
 }

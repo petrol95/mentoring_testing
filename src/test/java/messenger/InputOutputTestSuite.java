@@ -4,14 +4,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -93,8 +94,24 @@ public class InputOutputTestSuite {
     }
 
     @Test
-    public void checkClassViaMockStaticNotNull() {
-        MockedStatic<Launcher> mockLauncher = Mockito.mockStatic(Launcher.class);
-        assertNotNull(mockLauncher);
+    public void shouldRunFileOperation() throws IOException {
+        Messenger mockMessenger = mock(Messenger.class);
+        String[] params = new String[2];
+
+        Launcher.chooseOperationType(params, mockMessenger);
+
+        verify(mockMessenger, times(1)).processFileOperation(params);
+        verify(mockMessenger, never()).processConsoleOperation();
+    }
+
+    @Test
+    public void shouldRunConsoleOperation() throws IOException {
+        Messenger mockMessenger = mock(Messenger.class);
+        String[] params = new String[0];
+
+        Launcher.chooseOperationType(params, mockMessenger);
+
+        verify(mockMessenger, times(1)).processConsoleOperation();
+        verify(mockMessenger, never()).processFileOperation(params);
     }
 }
