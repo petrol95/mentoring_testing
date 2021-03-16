@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,8 @@ import static org.mockito.Mockito.*;
 public class InputOutputTestSuite {
 
     public static final String TEMP_FILE = "temp.txt";
+    public static final String INPUT_FILE = "input.txt";
+    public static final String OUTPUT_FILE = "output.txt";
 
     private static final String NEW_LINE = Messenger.LINE_SEPARATOR;
     private static final String TEMPLATE_LINE = "Dear #{username}," + NEW_LINE +
@@ -121,5 +124,22 @@ public class InputOutputTestSuite {
                         "we would like to inform you about our meeting on 12.09.2020." + NEW_LINE +
                         "Please see #{meet} for more information." + NEW_LINE,
                 messenger.readTemplate(inputData));
+    }
+
+    @Test
+    public void shouldProcessFileOperating() throws IOException {
+        Path outputFile = Paths.get(OUTPUT_FILE);
+
+        List<String> result = new ArrayList<>();
+        result.add("Dear Anna,");
+        result.add("we would like to inform you about our meeting on 12.09.2020.");
+        result.add("Please see #{meet} for more information.");
+
+        messenger.processFileOperation(new String[]{INPUT_FILE, OUTPUT_FILE});
+
+        assertAll(
+                () -> assertTrue(Files.exists(outputFile)),
+                () -> assertLinesMatch(result, Files.readAllLines(outputFile))
+        );
     }
 }
