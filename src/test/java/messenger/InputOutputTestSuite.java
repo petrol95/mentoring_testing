@@ -2,7 +2,11 @@ package messenger;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -16,6 +20,7 @@ import static org.mockito.Mockito.*;
  * @author Olga Petrova
  */
 
+@ExtendWith(MockitoExtension.class)
 public class InputOutputTestSuite {
 
     public static final String TEMP_FILE = "temp.txt";
@@ -79,13 +84,17 @@ public class InputOutputTestSuite {
     }
 
     @Test
-    public void shouldAddDataToInputMap() throws IOException {
+    public void shouldAddDataToInputMap() {
         MessengerInput messengerInput = new MessengerInput(mockReader);
         MessengerInput spyInput = spy(messengerInput);
 
-        doReturn(new HashMap<>().put("username", "Anna")).when(spyInput).inputFromConsole();
         spyInput.collectInputData("username Anna");
-
         assertEquals("Anna", spyInput.getInputData().get("username"));
+    }
+
+    @Test
+    public void checkClassViaMockStaticNotNull() {
+        MockedStatic<Launcher> mockLauncher = Mockito.mockStatic(Launcher.class);
+        assertNotNull(mockLauncher);
     }
 }
