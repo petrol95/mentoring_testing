@@ -114,4 +114,12 @@ public class InputOutputTestSuite {
         verify(mockMessenger, times(1)).processConsoleOperation();
         verify(mockMessenger, never()).processFileOperation(params);
     }
+
+    @Test
+    public void shouldReadTemplateFromFile() throws IOException {
+        assertEquals("Dear Anna," + NEW_LINE +
+                        "we would like to inform you about our meeting on 12.09.2020." + NEW_LINE +
+                        "Please see #{meet} for more information." + NEW_LINE,
+                messenger.readTemplate(inputData));
+    }
 }
